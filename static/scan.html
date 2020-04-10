@@ -1,0 +1,483 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=gb2312"/>
+    <title>Kodak Scanner SDK</title>
+    <style type="text/css">
+        #TextArea1
+        {
+            height: 369px;
+        }
+    </style>
+
+    <object id="KODAKSCANSDK" classid="CLSID:A2AC9A1D-171D-4E24-BF19-B08228F2DAA0" codebase="KODAKSCANSDK.CAB"></object>
+
+    <script type='text/javascript' language="javascript">
+
+        ///////////////////////////////////////////////////////////////////////////////////////
+        //
+        // KODAKSCANSDK.TestIEBrowser
+        //
+        // KODAK Scanner SDK - A COM visible API to TWAINCSToolkit
+        //
+        ///////////////////////////////////////////////////////////////////////////////////////
+        //  Author          Date            Version     Comment
+        //  C. Insalaco     2017/03/24      1.0.4.1     Clear display on Close Scanner
+        //  C. Insalaco     2017/03/14      1.0.4.0     Fix VB.Net txtFileNumber handler
+        //  C. Insalaco     2016/10/18      1.0.3.0     Add ScanEvent
+        //  R. Li           2016/09/02      1.0.2.0     Add select scanner msgbox
+        //  C. Insalaco     2016/06/08      1.0.1.0     Add Scan 1 Page parameter
+        //  C. Insalaco     2016/04/29      1.0.0.0     Tester program for KODAKSCANSDK
+        //
+        ///////////////////////////////////////////////////////////////////////////////////////
+        //  Copyright (C) 2013-2016 Kodak Alaris Inc.
+        //
+        //  Permission is hereby granted, free of charge, to any person obtaining a
+        //  copy of this software and associated documentation files (the "Software"),
+        //  to deal in the Software without restriction, including without limitation
+        //  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+        //  and/or sell copies of the Software, and to permit persons to whom the
+        //  Software is furnished to do so, subject to the following conditions:
+        //
+        //  The above copyright notice and this permission notice shall be included in
+        //  all copies or substantial portions of the Software.
+        //
+        //  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        //  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        //  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+        //  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+        //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+        //  DEALINGS IN THE SOFTWARE.
+        ///////////////////////////////////////////////////////////////////////////////////////
+
+        var m_szPaperSource = "3";                // 0 auto, 1 adf front, 2 adf rear, 3 adf duplex, 4 flatbed
+        var m_szShowScannerUI = "0";              // 0 off, 1 on
+        var m_szFileName = "img";                 // file name prefix
+        var m_szFileNumber = "0";                 // 0 to 999
+        var m_szFilePathName = "C:\\twain";       // output folder name
+        var m_szLanguage = "0";                   // 0 English, 1 Chinese Simplified, 2 Chinese Traditional
+        var m_szScanAs = "0";                     // 0 bw, 1 gray, 2 color
+        var m_szDpiResolution = "200";            // 100, 150, 200, 240, 250, 300, 400, 500, 600, 1200
+        var m_szDocumentType = "1";               // 0 photo, 1 textwithgraphics, 2 textwithphoto, 3 text
+        var m_szFileType = "0";                   // 0 tiff, 4 jpeg
+        var m_szCompressionType = "0";            // 0 none, 5 g4, 6 jpeg
+        var m_szJpegQuality = "50";               // 40 draft, 50 good, 80 better, 90 best, 100 superior
+        var m_szSharpen = "0";                    // 0 none, 1 normal, 2 high, 3 exaggerated
+        var m_szOrthogonalRotation = "1";         // 0 none, 1 auto, 2 90, 3 180, 4 270, 5 auto 90, 6 auto 180, 7 auto 270
+        var m_szImageRotation = "1";              // 0 0, 1 auto, 2 none, 90 90, 180 180, 270 270, 360 360
+        var m_szBlankImageDeletion = "1";         // 1 none, 2 content
+        var m_szBlankImageDeletionPercent = "0";  // 0 to 100
+        var m_szScanner = "KODAK Scanner: i1100"; // KODAK Scanner model
+        var m_szScannerProfile = "1";             // 1 is typically "Default" profile
+        var m_szOnePage = "0";                    // 0 scan multiple pages, 1 scan 1 page
+
+        var timeout; 							 // timeout value
+        var m_szStatusMsg = "Scan Status ...";    // Status output messages
+        var ExitCode;                             // return code
+        var intNumber = Number(m_szFileNumber);
+        var KODAKSCANSDK = new ActiveXObject("KODAKSCANSDK.Program");
+
+        ////////////////////////////////////////////////////
+        ///
+        /// Select Scanner ()
+        ///
+        ////////////////////////////////////////////////////
+
+
+        function SelectScanner() {
+            MsgBox("\nSelect Scanner begin ...");
+            ExitCode = KODAKSCANSDK.SetLanguage(m_szLanguage);
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: SetLanguage " + ExitCode.toString(16));
+            }
+            ExitCode = KODAKSCANSDK.Init();
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: Init " + ExitCode.toString(16));
+            }
+
+            var strScanners = KODAKSCANSDK.SelectScanner();
+
+            var ss,index=0;	//201609 by Remon
+            var  myselect=document.getElementById("Sourcelist");
+            ss = strScanners.split(",");
+            for (var i in ss) {
+                MsgBox(ss[i]);
+                myselect.options[index].text=ss[i];
+                index++;
+            }				//
+
+
+            //MsgBox(strScanners);
+            MsgBox("\nSelect Scanner end ...");
+        }
+
+        /////////////////////////////////////////////////////////////
+        ///
+        /// Open Scanner ()
+        ///
+        //////////////////////////////////////////////////////////////
+        function OpenScanner() {
+            MsgBox("\nOpen Scanner begin ...");
+
+            var  myselect=document.getElementById("Sourcelist");  //201609 by remon
+            //MsgBox(myselect.options[myselect.value-1].text);
+            m_szScanner = myselect.options[myselect.value-1].text;
+
+            ExitCode = KODAKSCANSDK.SetScanner(m_szScanner);
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: SetScanner " + ExitCode.toString(16));
+            }
+            ExitCode = KODAKSCANSDK.SetFileNumber(m_szFileNumber);
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: SetFileNumber " + ExitCode.toString(16));
+            }
+            intNumber = Number(m_szFileNumber);
+            ExitCode = KODAKSCANSDK.SetFileName(m_szFileName);
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: SetFileName " + ExitCode.toString(16));
+            }
+            ExitCode = KODAKSCANSDK.SetFilePathName(m_szFilePathName);
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: SetFilePathName " + ExitCode.toString(16));
+            }
+            ExitCode = KODAKSCANSDK.OpenScanner();
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: OpenScanner " + ExitCode.toString(16));
+            }
+            ExitCode = KODAKSCANSDK.SetScannerProfile(m_szScannerProfile);
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: SetScannerProfile " + ExitCode.toString(16));
+            }
+
+            MsgBox("\nOpen Scanner end ...");
+        }
+
+
+        ///////////////////////////////////////////////////
+        ///
+        ///	Set Parameters ()
+        ///
+        ///////////////////////////////////////////////////
+        function SetParameters() {
+            MsgBox("\nSet Parameters begin ...");
+            ExitCode = KODAKSCANSDK.SetPaperSource(m_szPaperSource);
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: SetPaperSource" + ExitCode.toString(16));
+            }
+            ExitCode = KODAKSCANSDK.SetScanAs(m_szScanAs);
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: SetScanAs" + ExitCode.toString(16));
+            }
+            ExitCode = KODAKSCANSDK.SetDocumentType(m_szDocumentType);
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: SetDocumentType" + ExitCode.toString(16));
+            }
+            ExitCode = KODAKSCANSDK.SetDPIResolution(m_szDpiResolution);
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: SetDPIResolution" + ExitCode.toString(16));
+            }
+            ExitCode = KODAKSCANSDK.SetFileType(m_szFileType);
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: SetFileType" + ExitCode.toString(16));
+            }
+            ExitCode = KODAKSCANSDK.SetCompressionType(m_szCompressionType);
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: SetCompressionType" + ExitCode.toString(16));
+            }
+            if (m_szCompressionType == "6") {
+                ExitCode = KODAKSCANSDK.SetJPEGQuality(m_szJpegQuality);
+                if (ExitCode != 0) {
+                    MsgBox("An error occurred: SetJPEGQuality" + ExitCode.toString(16));
+                }
+            }
+            if (m_szScanAs != 0) {
+                ExitCode = KODAKSCANSDK.SetSharpen(m_szSharpen);
+                if (ExitCode != 0) {
+                    MsgBox("An error occurred: SetSharpen" + ExitCode.toString(16));
+                }
+            }
+            ExitCode = KODAKSCANSDK.SetImageRotation(m_szImageRotation);
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: SetImageRotation" + ExitCode.toString(16));
+            }
+            // ExitCode = KODAKSCANSDK.SetOrthogonalRotation(m_szOrthogonalRotation);
+            // if (ExitCode != 0) {
+            //    MsgBox("An error occurred: SetOrthogonalRotation" + ExitCode.toString(16));
+            // }
+            ExitCode = KODAKSCANSDK.SetBlankImageDeletion(m_szBlankImageDeletion);
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: SetBlankImageDeletion" + ExitCode.toString(16));
+            }
+            if (m_szBlankImageDeletion == "2") {
+                ExitCode = KODAKSCANSDK.SetBlankImageDeletionPercent(m_szBlankImageDeletionPercent);
+                if (ExitCode != 0) {
+                    MsgBox("An error occurred: SetBlankImageDeletionPercent" + ExitCode.toString(16));
+                }
+            }
+            ExitCode = KODAKSCANSDK.ShowScannerUI(m_szShowScannerUI);
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: ShowScannerUI" + ExitCode.toString(16));
+            }
+            MsgBox("\nSet Parameters end ...");
+        }
+
+        ///////////////////////////////////////////////////
+        ///
+        /// Start Scan ()
+        ///
+        ///////////////////////////////////////////////////
+        function StartScan() {
+            MsgBox("\nStart Scan begin ...");
+            ExitCode = KODAKSCANSDK.StartScan(m_szOnePage);
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: StartScan " + ExitCode.toString(16));
+            }
+            sleepn(5000);
+            GetImages("1");
+            MsgBox("\nStart Scan end ...");
+        }
+
+        ///////////////////////////////////////////////////
+        ///
+        /// Stop Scan ()
+        ///
+        ///////////////////////////////////////////////////
+        function StopScan() {
+            MsgBox("\nStop Scan begin ...");
+            ExitCode = KODAKSCANSDK.StopScan();
+            if (ExitCode != 0)
+            {
+                MsgBox("An error occurred: StopScan " + ExitCode.toString(16));
+            }
+            MsgBox("\nStop Scan end ...");
+        }
+
+        ///////////////////////////////////////////////////
+        ///
+        /// Close Scanner ()
+        ///
+        ///////////////////////////////////////////////////
+        function CloseScanner() {
+            MsgBox("\nClose Scanner begin ...");
+            ExitCode = KODAKSCANSDK.CloseScanner();
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: CloseScanner " + ExitCode.toString(16));
+            }
+            GetImages("0");
+            MsgBox("\nClose Scanner end ...");
+        }
+
+        ///////////////////////////////////////////////////
+        ///
+        /// ISFBAttached ()
+        ///
+        ///////////////////////////////////////////////////
+        function ISFBAttached() {
+            ExitCode = KODAKSCANSDK.IsFBAttached();
+            MsgBox("\nIsFBAttached = " + ExitCode.toString(16));
+        }
+
+        ///////////////////////////////////////////////////
+        ///
+        /// ShowScannerSetup ()
+        ///
+        ///////////////////////////////////////////////////
+        function ShowScannerSetup() {
+            MsgBox("\nShow Scanner Setup begin ...");
+            ExitCode = KODAKSCANSDK.ShowScannerSetup();
+            if (ExitCode != 0) {
+                MsgBox("An error occurred: ShowScannerSetup " + ExitCode.toString(16));
+            }
+            MsgBox("\nShow Scanner Setup end ...");
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////
+        ///
+        ///  Get images and display
+        ///
+        //////////////////////////////////////////////////////////////////////////////
+        function GetImages(args)	{
+            var intWidth, intHeight;
+            var maxWidth = 468;
+            var maxHeight = 485;
+            var ratio = 0;
+            var szFileName;
+
+            if (args == "1") {
+                if (m_szPaperSource = "3") {
+                    intNumber = intNumber+2;
+                } else {
+                    intNumber = intNumber+1;
+                }
+
+                if (m_szFileType == "0") {
+                    szFileName	= m_szFilePathName + "\\" + m_szFileName + '00000' + intNumber.toString() + ".tif";
+                } else {
+                    szFileName	= m_szFilePathName + "\\" + m_szFileName + '00000' + intNumber.toString() + ".jpg";
+                }
+
+                var myImg = document.getElementById("pic");
+                myImg.src = szFileName;
+                createNode(szFileName,intNumber);
+                MsgBox(szFileName);
+
+                intWidth = myImg.naturalWidth;
+                intHeight = myImg.naturalHeight;
+                if (intWidth > maxWidth) {
+                    ratio = maxWidth / intWidth;
+                    myImg.setAttribute("width", intWidth *  ratio);
+                    myImg.setAttribute("height", intHeight *  ratio);
+                }
+                else if (intHeight > maxHeight) {
+                    ratio = maxHeight / intHeight;
+                    myImg.setAttribute("width", intWidth *  ratio);
+                    myImg.setAttribute("height", intHeight *  ratio);
+                }
+                document.getElementById("title").value=szFileName;
+            }
+            if (args == "0") {
+                document.getElementById("pic").src = "";
+                document.getElementById("title").value = "";
+            }
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        ///
+        /// Create Node (url,text)
+        ///
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        function createNode(url,text) {
+            var btn = document.createElement("input");
+            btn.type = "button";
+            btn.value = url;
+            btn.style.border = 0;
+            btn.style.backgroundColor = "white";
+            btn.onclick = function () {
+                //alert(this.value);
+                document.getElementById("pic").src= this.value;
+                document.getElementById("title").value= this.value;
+            }
+            document.getElementById("div1").appendChild(btn);
+            btn = document.createElement('div');
+            document.getElementById("div1").appendChild(btn);
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        ///
+        /// sleepn(n)
+        ///
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        function sleepn(n) {
+            var start = new Date().getTime();
+            while (true) if (new Date().getTime() - start > n) break;
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        ///
+        /// MsgBox(m_szStatusMsg)
+        ///
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        function MsgBox(m_szStatusMsg) {
+            document.getElementById("TextArea1").value=document.getElementById("TextArea1").innerText+m_szStatusMsg+"\n ";
+            document.getElementById("TextArea1").scrollTop = document.getElementById("TextArea1").scrollHeight;
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        ///
+        /// Window onload event
+        ///
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        window.onload = function () {
+            window.clearTimeout(timeout);
+            document.getElementById("pic").src = "";
+            document.getElementById("title").value = "";
+            MsgBox(m_szStatusMsg);
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        ///
+        /// Window onbeforeunload event
+        ///
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        window.onbeforeunload = function () {   // Refresh or shut down before the operation
+            var n = window.event.screenX - window.screenLeft;
+            var b = n > document.documentElement.scrollWidth-20;
+            if (b && window.event.clientY < 0 || window.event.altKey) {
+                //alert("This is a close operation rather than a refresh");
+                CloseScanner();
+                KODAKSCANSDK.Dispose();
+                window.event.returnValue = ""; //Put here the code you want to return
+            }
+            else {
+                //alert("This is a refresh operation , rather than shut down");
+                m_szStatusMsg = "Scan Status ...";
+                document.getElementById("TextArea1").value=	"";
+            }
+        }
+
+    </script>
+
+</head>
+<body>
+
+
+<div class="Section1">
+
+    <table border="1" cellspacing="0" cellpadding="0" >
+        <tr>
+            <td style="width:200" valign="top" >
+                <p class="MsoNormal"> <span style="font-size: larger; font-family:arial"/>Kodak Scanner SDK</p>
+
+                <div id="div1" style="width:188px;height: 280px;border: 1px solid;"></div>
+
+                <select id="Sourcelist"  name="" onchange="document.getElementById('Sourcelist').value=this.value" style="width:188px;height: 20px;border: 1px solid;">
+                    <option   value="1">Scanner Source</option>
+                    <option   value="2"></option>
+                    <option   value="3"></option>
+                    <option   value="4"></option>
+                    <option   value="5"></option>
+                    <option   value="6"></option>
+                    <option   value="7"></option>
+                    <option   value="8"></option>
+                    <option   value="9"></option>
+                    <option   value="10"></option>
+                </select>
+
+                <textarea id="TextArea1" rows="" cols="25"></textarea>
+
+            </td>
+
+            <td style="width:300" valign="top" >
+                <div style="top:1px;position:relative;margin:1px;height:3px;"> </div>
+
+                <!--Our buttons -->
+                <input type="button" style="position:relative;text-align:center;" onclick="SelectScanner()" value="Select Scanner"/>
+                <input type="button" onclick="OpenScanner()" value="Open Scanner"/>
+                <input type="button" onclick="SetParameters()" value="Set Parameters"/>
+                <input type="button" onclick="StartScan()" value="Start Scan"/>
+                <input type="button" onclick="StopScan()" value="Stop Scan"/>
+                <input type="button" onclick="ISFBAttached()" value="Is Flatbed Attached"/>
+                <input type="button" onclick="ShowScannerSetup()" value="Show Scanner Setup"/>
+                <input type="button" onclick="CloseScanner()" value="Close Scanner"/>
+                <p></p>
+
+                <!--Picture frame -->
+                <div style="text-align:center;width:462px;">
+                    <div style="width:452px;height:502px;overflow:hidden;text-overflow:clip;float:left;">
+                        <div><a id="url" target="_blank"><img id="pic" alt="" width="468" height="485" /></a></div>
+                    </div>
+
+                    <!--Picture frame title -->
+                    <div style="text-align:left"><input id="title" type="text" style="height:15px;background-color:#f2f6fb;border:0px solid #f2f6fb;width:452px;color:#ff8800;font-size:9pt;position:relative;padding-top:1px;text-align:center;"/></div>
+                </div>
+
+            </td>
+        </tr>
+    </table>
+
+    <p class="MsoNormal">&nbsp </p>
+</div>
+
+</body>
+</html>
+

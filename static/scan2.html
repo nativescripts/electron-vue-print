@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdn.bootcss.com/vue/2.2.2/vue.min.js"></script>
+    <title>Document</title>
+    <style>
+        @page {
+            margin: 0;
+        }
+        .a {
+            padding-left: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <object id="KODAKSCANSDK" classid="CLSID:A2AC9A1D-171D-4E24-BF19-B08228F2DAA" codebase="KODAKSCANSDK.CAB"></object>
+    <!-- Our buttons -->
+    <input type="button" style="position:relative;text-align:center;" onclick="SelectScanner()" value="Select Scanner"/>
+    <input type="button" onclick="OpenScanner()" value="Open Scanner"/>
+    <input type="button" onclick="SetParameters()" value="Set Parameters"/>
+    <input type="button" onclick="StartScan()" value="Start Scan"/>
+    <input type="button" onclick="StopScan()" value="Stop Scan"/>
+    <input type="button" onclick="ISFBAttached()" value="Is Flatbed Attached"/>
+    <input type="button" onclick="ShowScannerSetup()" value="Show Scanner Setup"/>
+    <input type="button" onclick="CloseScanner()" value="Close Scanner"/>
+
+    <script type='text/javascript' language="javascript">
+        var m_szPaperSource = "3"; // 0 auto, 1 adf front, 2 adf rear, 3 adf duplex, 4 flatbed
+        var m_szShowScannerUI = "0"; // 0 off, 1 on
+        var m_szFileName = "img"; // file name prefix
+        var m_szFileNumber = "0"; // 0 to 999
+        var m_szFilePathName = "C:\\twain"; // output folder name
+        var m_szLanguage = "0"; // 0 English, 1 Chinese Simplified, 2 Chinese Traditional
+        var m_szScanAs = "0"; // 0 bw, 1 gray, 2 color
+        var m_szDpiResolution = "200"; // 100, 150, 200, 240, 250, 300, 400, 500, 600, 1200
+        var m_szDocumentType = "1"; // 0 photo, 1 textwithgraphics, 2 textwithphoto, 3 text
+        var m_szFileType = "0"; // 0 tiff, 4 jpeg
+        var m_szCompressionType = "0"; // 0 none, 5 g4, 6 jpeg
+        var m_szJpegQuality = "50"; // 40 draft, 50 good, 80 better, 90 best, 100 superior
+        var m_szSharpen = "0"; // 0 none, 1 normal, 2 high, 3 exaggerated
+        var m_szOrthogonalRotation = "1"; // 0 none, 1 auto, 2 90, 3 180, 4 270, 5 auto 90, 6 auto 180, 7 auto 270
+        var m_szImageRotation = "1"; // 0 0, 1 auto, 2 none, 90 90, 180 180, 270 270, 360 360
+        var m_szBlankImageDeletion = "1"; // 1 none, 2 content
+        var m_szBlankImageDeletionPercent = "0"; // 0 to 100
+        var m_szScanner = "KODAK Scanner: i1100"; // KODAK Scanner model
+        var m_szScannerProfile = "1"; // 1 is typically "Default" profile
+        var m_szOnePage = "0"; // 0 scan multiple pages, 1 scan 1 page
+        var m_szStatusMsg = "Scan Status ..."; // Status output messages
+        var ExitCode; // return code
+        var KODAKSCANSDK = new ActiveXObject("KODAKSCANSDK.Program");
+        //初始化 SDK 设置 TWAIN UI 语言，添加按钮 SelectScanner：
+        function SelectScanner() {
+                ExitCode = KODAKSCANSDK.SetLanguage(m_szLanguage);
+                if (ExitCode != 0) {
+                    // handle error
+                }
+                ExitCode = KODAKSCANSDK.Init();
+                if (ExitCode != 0) {
+                    // handle error
+                }
+                var strScanners = KODAKSCANSDK.SelectScanner();
+                var ss,index=0;
+                var myselect=document.getElementById("Sourcelist");
+                ss = strScanners.split(",");
+                for (var i in ss) {
+                    MsgBox(ss[i]);
+                    myselect.options[index].text=ss[i];
+                    index++;
+                }
+        }
+        //打开扫描仪驱动程序
+        //添加按钮 OpenScanner：
+        function OpenScanner() {
+            ExitCode = KODAKSCANSDK.SetScanner(m_szScanner);
+            if (ExitCode != 0) {
+                // handle error
+            }
+            ExitCode = KODAKSCANSDK.SetFileNumber(m_szFileNumber);
+            if (ExitCode != 0) {
+                // handle error
+            }
+            ExitCode = KODAKSCANSDK.SetFileName(m_szFileName);
+            if (ExitCode != 0) {
+                // handle error
+            }
+            ExitCode = KODAKSCANSDK.SetFilePathName(m_szFilePathName);
+            if (ExitCode != 0) {
+                // handle error
+            }
+            ExitCode = KODAKSCANSDK.OpenScanner();
+            if (ExitCode != 0) {
+                // handle error
+            }
+            ExitCode = KODAKSCANSDK.SetScannerProfile(m_szScannerProfile);
+            if (ExitCode != 0) {
+                // handle error
+            }
+        }
+        //设置扫描属性
+        //添加按钮 SetParameters：
+         function SetParameters() {
+             ExitCode = KODAKSCANSDK.SetPaperSource(m_szPaperSource);
+             if (ExitCode != 0) {
+                // handle error
+             }
+             ExitCode = KODAKSCANSDK.SetScanAs(m_szScanAs);
+             if (ExitCode != 0) {
+                // handle error
+             }
+             ExitCode = KODAKSCANSDK.SetDocumentType(m_szDocumentType);
+             if (ExitCode != 0) {
+                // handle error
+             }
+             ExitCode = KODAKSCANSDK.SetDPIResolution(m_szDpiResolution);
+             if (ExitCode != 0) {
+                // handle error
+             }
+             ExitCode = KODAKSCANSDK.SetFileType(m_szFileType);
+             if (ExitCode != 0) {
+                // handle error
+             }
+             ExitCode = KODAKSCANSDK.SetCompressionType(m_szCompressionType);
+             if (ExitCode != 0) {
+                // handle error
+             }
+             if (m_szCompressionType == "6") {
+                 ExitCode = KODAKSCANSDK.SetJPEGQuality(m_szJpegQuality);
+                 if (ExitCode != 0) {
+                    // handle error
+                 }
+             }
+             if (m_szScanAs != 0) {
+                 ExitCode = KODAKSCANSDK.SetSharpen(m_szSharpen);
+                 if (ExitCode != 0) {
+                    // handle error
+                 }
+             }
+             ExitCode = KODAKSCANSDK.SetImageRotation(m_szImageRotation);
+             if (ExitCode != 0) {
+                 // handle error
+             }
+             // ExitCode = KODAKSCANSDK.SetOrthogonalRotation(m_szOrthogonalRotation);
+             // if (ExitCode != 0) {
+             // // handle error
+             // }
+             ExitCode = KODAKSCANSDK.SetBlankImageDeletion(m_szBlankImageDeletion);
+             if (ExitCode != 0) {
+                // handle error
+             }
+             if (m_szBlankImageDeletion == "2") {
+                 ExitCode = KODAKSCANSDK.SetBlankImageDeletionPercent(m_szBlankImageDeletionPercent);
+                 if (ExitCode != 0) {
+                    // handle error
+                 }
+             }
+             ExitCode = KODAKSCANSDK.ShowScannerUI(m_szShowScannerUI);
+             if (ExitCode != 0) {
+                // handle error
+             }
+         }
+        //确定平板是否已安装
+        //添加按钮 ISFBAttached：
+         function ISFBAttached() {
+             ExitCode = KODAKSCANSDK.IsFBAttached();
+             MsgBox("\nIsFBAttached = " + ExitCode);
+         }
+        //打开 DataSource 用户界面
+        //添加按钮 ShowScannerSetup：
+        function ShowScannerSetup () {
+            ExitCode = KODAKSCANSDK.ShowScannerSetup();
+            if (ExitCode != 0) {
+                // handle error
+            }
+        }
+        //开始扫描
+        //添加按钮 StartScan：
+         function StartScan() {
+             ExitCode = KODAKSCANSDK.StartScan(m_szOnePage);
+             if (ExitCode != 0) {
+                // handle error
+             }
+             GetImages("1");
+         }
+        //停止扫描
+        //添加按钮 StopScan：
+         function StopScan() {
+             ExitCode = KODAKSCANSDK.StopScan();
+             if (ExitCode != 0)
+             {
+                // handle error
+             }
+         }
+        //关闭扫描仪驱动程序
+        //添加按钮 CloseScanner：
+         function CloseScanner() {
+             ExitCode = KODAKSCANSDK.CloseScanner();
+             if (ExitCode != 0) {
+                // handle error
+             }
+         }
+        //显示图像：
+        function GetImages(args){
+            var intWidth, intHeight;
+            var maxWidth = 468;
+            var maxHeight = 485;
+            var ratio = 0;
+            var szFileName;
+            if (args == "1") {
+                intNumber = intNumber+1;
+                if (m_szFileType == "0") {
+                    szFileName= m_szFilePathName + "\\" + m_szFileName + '00000' + intNumber.toString() + ".tif";
+                } else {
+                    szFileName= m_szFilePathName + "\\" + m_szFileName + '00000' + intNumber.toString() + ".jpg";
+                }
+                var myImg = document.getElementById("pic");
+                myImg.src = szFileName;
+                createNode(szFileName,intNumber);
+                MsgBox(szFileName);
+                intWidth = myImg.naturalWidth;
+                intHeight = myImg.naturalHeight;
+                if (intWidth > maxWidth) {
+                    ratio = maxWidth / intWidth;
+                    myImg.setAttribute("width", intWidth * ratio);
+                    myImg.setAttribute("height", intHeight * ratio);
+                }
+                else if (intHeight > maxHeight) {
+                    ratio = maxHeight / intHeight;
+                    myImg.setAttribute("width", intWidth * ratio);
+                    myImg.setAttribute("height", intHeight * ratio);
+                }
+                document.getElementById("title").value=szFileName;
+            }
+        }
+    </script>
+</body>
+</html>
