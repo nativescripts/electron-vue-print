@@ -1,43 +1,22 @@
-简书上写了更详细的的文档
-https://www.jianshu.com/p/45df1dc37478
 
 项目环境
 
-node 10.15.3
-
-yarn  1.15.2
-
-win10
-
-代码完成时间2019-4-18
-
-废话不多说，先放源码
-
-GitHub
-
-[https://github.com/951477037/electron-print](https://github.com/951477037/electron-print)
-
-```
-git clone https://github.com/951477037/electron-print.git
-```
+node 最新的稳定版
 
 ```
 //安装依赖
-yarn
+npm
 ```
 
 ```
 //运行项目
-yarn run dev
+npm run dev
 ```
 
 ```
 //打包项目
-yarn run build
+npm run build
 ```
-
-目录结构
-![目录结构](http://upload-images.jianshu.io/upload_images/15562516-2df5d50d68200ae6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 先在主进程 /src/main/index.js
 
@@ -50,8 +29,6 @@ import {
 } from 'electron'
 ```
 
-![index.js代码](http://upload-images.jianshu.io/upload_images/15562516-94f9a652f47fd4b3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-
 在createWindow方法里添加以下代码，获取打印机列表
 
 ```
@@ -63,8 +40,6 @@ import {
     mainWindow.webContents.send('getPrinterList', list);
   });
 ```
-
-![index.js](http://upload-images.jianshu.io/upload_images/15562516-488a2a3db1183179.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 接下来在LandingPage.vue中也就是渲染进程中添加一下代码
 
@@ -82,15 +57,7 @@ console.log(data);
 });
 ```
 
-![LandingPage.vue](http://upload-images.jianshu.io/upload_images/15562516-ab53ac235e403bfc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-输出结果如下
-![image](http://upload-images.jianshu.io/upload_images/15562516-032b9165b71ec638.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
-重点来了！！！
-在static中新建一个print.html文件（如果你害怕打包后会找不到的话，我在最后会提供一个方法不知道你看得仔不仔细），如下图所示
-![目录结构](http://upload-images.jianshu.io/upload_images/15562516-8ae3b2ba49ae60a9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-如果不在static中新建的话会报错（具体原因我明没有深入去研究）
-![报错](http://upload-images.jianshu.io/upload_images/15562516-4de40faf2737dc9d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 ```
 <!DOCTYPE html>
@@ -229,12 +196,6 @@ export default {
 
 ```
 
-运行代码
-
-![打印](http://upload-images.jianshu.io/upload_images/15562516-5fffc25bfa27c616.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-
-
-打包的方法！！！
 打包前在package.json中修改
 
 ```
@@ -247,12 +208,3 @@ export default {
     },
 
 ```
-
-打包后，electron-print\build\win-ia32-unpacked\resources中就会存在static
-![打包后目录](http://upload-images.jianshu.io/upload_images/15562516-00af6067ba65f9dd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-
-static中
-
-![打包后目录](http://upload-images.jianshu.io/upload_images/15562516-bd25464efc41abb9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-
-如果觉得有用请点个赞，转发请注明来源，谢谢
