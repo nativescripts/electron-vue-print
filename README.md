@@ -4,18 +4,25 @@
 node 最新的稳定版
 
 ```
-//安装依赖
-npm
+//yarn 基本安装和使用
+npm install -g yarn
+```
+```
+//安装依赖  注意不要用淘宝镜像下载依赖，最后打包会报错
+npm install  或者 yarn  
 ```
 
 ```
 //运行项目
-npm run dev
+npm run dev 或者 yarn run dev
 ```
 
 ```
 //打包项目
-npm run build
+npm run build 或者  yarn run build
+//打包报错常见问题：
+https://blog.csdn.net/gaoxuaiguoyi/article/details/80708815
+https://www.cnblogs.com/mingjing/p/9638420.html
 ```
 
 先在主进程 /src/main/index.js
