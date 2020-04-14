@@ -1,483 +1,222 @@
+<!DOCTYPE html>
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=gb2312"/>
-    <title>Kodak Scanner SDK</title>
-    <style type="text/css">
-        #TextArea1
-        {
-            height: 369px;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>ScanDemo</title>
+<link rel="stylesheet" type="text/css" href="css/main.css"/>
+<link rel="stylesheet" type="text/css" href="css/detail.css"/>
+<link rel="stylesheet" type="text/css" href="css/modal.css"/>
+<script type="text/javascript">
+	var newSaveSubDir="20200414"; // C:\Program Files (x86)\uniCapture\scanService\images\20200414   //扫描后的图片存放地址
+	var uploadHostUrl="http://localhost:8080/imageTest/RecorderServlet";  // 上传的服务器路径，这个路径最后包含我们的服务端接收模块，是java代码demo，你们开发需要的可以传给你们
+	var uploadRemotePath="file:///C:/KodakSDKPath/remotePath";  // 服务器端存放图片的路径
+	var uploadLocalPath="file:///C:/KodakSDKPath/localPath";  // 客户端扫描图片的存放的路径
+	var batchImageCount=0;  //路径中的图片总量
 
-    <object id="KODAKSCANSDK" classid="CLSID:A2AC9A1D-171D-4E24-BF19-B08228F2DAA0" codebase="KODAKSCANSDK.CAB"></object>
-
-    <script type='text/javascript' language="javascript">
-
-        ///////////////////////////////////////////////////////////////////////////////////////
-        //
-        // KODAKSCANSDK.TestIEBrowser
-        //
-        // KODAK Scanner SDK - A COM visible API to TWAINCSToolkit
-        //
-        ///////////////////////////////////////////////////////////////////////////////////////
-        //  Author          Date            Version     Comment
-        //  C. Insalaco     2017/03/24      1.0.4.1     Clear display on Close Scanner
-        //  C. Insalaco     2017/03/14      1.0.4.0     Fix VB.Net txtFileNumber handler
-        //  C. Insalaco     2016/10/18      1.0.3.0     Add ScanEvent
-        //  R. Li           2016/09/02      1.0.2.0     Add select scanner msgbox
-        //  C. Insalaco     2016/06/08      1.0.1.0     Add Scan 1 Page parameter
-        //  C. Insalaco     2016/04/29      1.0.0.0     Tester program for KODAKSCANSDK
-        //
-        ///////////////////////////////////////////////////////////////////////////////////////
-        //  Copyright (C) 2013-2016 Kodak Alaris Inc.
-        //
-        //  Permission is hereby granted, free of charge, to any person obtaining a
-        //  copy of this software and associated documentation files (the "Software"),
-        //  to deal in the Software without restriction, including without limitation
-        //  the rights to use, copy, modify, merge, publish, distribute, sublicense,
-        //  and/or sell copies of the Software, and to permit persons to whom the
-        //  Software is furnished to do so, subject to the following conditions:
-        //
-        //  The above copyright notice and this permission notice shall be included in
-        //  all copies or substantial portions of the Software.
-        //
-        //  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-        //  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-        //  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
-        //  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-        //  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-        //  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-        //  DEALINGS IN THE SOFTWARE.
-        ///////////////////////////////////////////////////////////////////////////////////////
-
-        var m_szPaperSource = "3";                // 0 auto, 1 adf front, 2 adf rear, 3 adf duplex, 4 flatbed
-        var m_szShowScannerUI = "0";              // 0 off, 1 on
-        var m_szFileName = "img";                 // file name prefix
-        var m_szFileNumber = "0";                 // 0 to 999
-        var m_szFilePathName = "C:\\twain";       // output folder name
-        var m_szLanguage = "0";                   // 0 English, 1 Chinese Simplified, 2 Chinese Traditional
-        var m_szScanAs = "0";                     // 0 bw, 1 gray, 2 color
-        var m_szDpiResolution = "200";            // 100, 150, 200, 240, 250, 300, 400, 500, 600, 1200
-        var m_szDocumentType = "1";               // 0 photo, 1 textwithgraphics, 2 textwithphoto, 3 text
-        var m_szFileType = "0";                   // 0 tiff, 4 jpeg
-        var m_szCompressionType = "0";            // 0 none, 5 g4, 6 jpeg
-        var m_szJpegQuality = "50";               // 40 draft, 50 good, 80 better, 90 best, 100 superior
-        var m_szSharpen = "0";                    // 0 none, 1 normal, 2 high, 3 exaggerated
-        var m_szOrthogonalRotation = "1";         // 0 none, 1 auto, 2 90, 3 180, 4 270, 5 auto 90, 6 auto 180, 7 auto 270
-        var m_szImageRotation = "1";              // 0 0, 1 auto, 2 none, 90 90, 180 180, 270 270, 360 360
-        var m_szBlankImageDeletion = "1";         // 1 none, 2 content
-        var m_szBlankImageDeletionPercent = "0";  // 0 to 100
-        var m_szScanner = "KODAK Scanner: i1100"; // KODAK Scanner model
-        var m_szScannerProfile = "1";             // 1 is typically "Default" profile
-        var m_szOnePage = "0";                    // 0 scan multiple pages, 1 scan 1 page
-
-        var timeout; 							 // timeout value
-        var m_szStatusMsg = "Scan Status ...";    // Status output messages
-        var ExitCode;                             // return code
-        var intNumber = Number(m_szFileNumber);
-        var KODAKSCANSDK = new ActiveXObject("KODAKSCANSDK.Program");
-
-        ////////////////////////////////////////////////////
-        ///
-        /// Select Scanner ()
-        ///
-        ////////////////////////////////////////////////////
-
-
-        function SelectScanner() {
-            MsgBox("\nSelect Scanner begin ...");
-            ExitCode = KODAKSCANSDK.SetLanguage(m_szLanguage);
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: SetLanguage " + ExitCode.toString(16));
-            }
-            ExitCode = KODAKSCANSDK.Init();
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: Init " + ExitCode.toString(16));
-            }
-
-            var strScanners = KODAKSCANSDK.SelectScanner();
-
-            var ss,index=0;	//201609 by Remon
-            var  myselect=document.getElementById("Sourcelist");
-            ss = strScanners.split(",");
-            for (var i in ss) {
-                MsgBox(ss[i]);
-                myselect.options[index].text=ss[i];
-                index++;
-            }				//
-
-
-            //MsgBox(strScanners);
-            MsgBox("\nSelect Scanner end ...");
-        }
-
-        /////////////////////////////////////////////////////////////
-        ///
-        /// Open Scanner ()
-        ///
-        //////////////////////////////////////////////////////////////
-        function OpenScanner() {
-            MsgBox("\nOpen Scanner begin ...");
-
-            var  myselect=document.getElementById("Sourcelist");  //201609 by remon
-            //MsgBox(myselect.options[myselect.value-1].text);
-            m_szScanner = myselect.options[myselect.value-1].text;
-
-            ExitCode = KODAKSCANSDK.SetScanner(m_szScanner);
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: SetScanner " + ExitCode.toString(16));
-            }
-            ExitCode = KODAKSCANSDK.SetFileNumber(m_szFileNumber);
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: SetFileNumber " + ExitCode.toString(16));
-            }
-            intNumber = Number(m_szFileNumber);
-            ExitCode = KODAKSCANSDK.SetFileName(m_szFileName);
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: SetFileName " + ExitCode.toString(16));
-            }
-            ExitCode = KODAKSCANSDK.SetFilePathName(m_szFilePathName);
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: SetFilePathName " + ExitCode.toString(16));
-            }
-            ExitCode = KODAKSCANSDK.OpenScanner();
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: OpenScanner " + ExitCode.toString(16));
-            }
-            ExitCode = KODAKSCANSDK.SetScannerProfile(m_szScannerProfile);
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: SetScannerProfile " + ExitCode.toString(16));
-            }
-
-            MsgBox("\nOpen Scanner end ...");
-        }
-
-
-        ///////////////////////////////////////////////////
-        ///
-        ///	Set Parameters ()
-        ///
-        ///////////////////////////////////////////////////
-        function SetParameters() {
-            MsgBox("\nSet Parameters begin ...");
-            ExitCode = KODAKSCANSDK.SetPaperSource(m_szPaperSource);
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: SetPaperSource" + ExitCode.toString(16));
-            }
-            ExitCode = KODAKSCANSDK.SetScanAs(m_szScanAs);
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: SetScanAs" + ExitCode.toString(16));
-            }
-            ExitCode = KODAKSCANSDK.SetDocumentType(m_szDocumentType);
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: SetDocumentType" + ExitCode.toString(16));
-            }
-            ExitCode = KODAKSCANSDK.SetDPIResolution(m_szDpiResolution);
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: SetDPIResolution" + ExitCode.toString(16));
-            }
-            ExitCode = KODAKSCANSDK.SetFileType(m_szFileType);
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: SetFileType" + ExitCode.toString(16));
-            }
-            ExitCode = KODAKSCANSDK.SetCompressionType(m_szCompressionType);
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: SetCompressionType" + ExitCode.toString(16));
-            }
-            if (m_szCompressionType == "6") {
-                ExitCode = KODAKSCANSDK.SetJPEGQuality(m_szJpegQuality);
-                if (ExitCode != 0) {
-                    MsgBox("An error occurred: SetJPEGQuality" + ExitCode.toString(16));
-                }
-            }
-            if (m_szScanAs != 0) {
-                ExitCode = KODAKSCANSDK.SetSharpen(m_szSharpen);
-                if (ExitCode != 0) {
-                    MsgBox("An error occurred: SetSharpen" + ExitCode.toString(16));
-                }
-            }
-            ExitCode = KODAKSCANSDK.SetImageRotation(m_szImageRotation);
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: SetImageRotation" + ExitCode.toString(16));
-            }
-            // ExitCode = KODAKSCANSDK.SetOrthogonalRotation(m_szOrthogonalRotation);
-            // if (ExitCode != 0) {
-            //    MsgBox("An error occurred: SetOrthogonalRotation" + ExitCode.toString(16));
-            // }
-            ExitCode = KODAKSCANSDK.SetBlankImageDeletion(m_szBlankImageDeletion);
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: SetBlankImageDeletion" + ExitCode.toString(16));
-            }
-            if (m_szBlankImageDeletion == "2") {
-                ExitCode = KODAKSCANSDK.SetBlankImageDeletionPercent(m_szBlankImageDeletionPercent);
-                if (ExitCode != 0) {
-                    MsgBox("An error occurred: SetBlankImageDeletionPercent" + ExitCode.toString(16));
-                }
-            }
-            ExitCode = KODAKSCANSDK.ShowScannerUI(m_szShowScannerUI);
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: ShowScannerUI" + ExitCode.toString(16));
-            }
-            MsgBox("\nSet Parameters end ...");
-        }
-
-        ///////////////////////////////////////////////////
-        ///
-        /// Start Scan ()
-        ///
-        ///////////////////////////////////////////////////
-        function StartScan() {
-            MsgBox("\nStart Scan begin ...");
-            ExitCode = KODAKSCANSDK.StartScan(m_szOnePage);
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: StartScan " + ExitCode.toString(16));
-            }
-            sleepn(5000);
-            GetImages("1");
-            MsgBox("\nStart Scan end ...");
-        }
-
-        ///////////////////////////////////////////////////
-        ///
-        /// Stop Scan ()
-        ///
-        ///////////////////////////////////////////////////
-        function StopScan() {
-            MsgBox("\nStop Scan begin ...");
-            ExitCode = KODAKSCANSDK.StopScan();
-            if (ExitCode != 0)
-            {
-                MsgBox("An error occurred: StopScan " + ExitCode.toString(16));
-            }
-            MsgBox("\nStop Scan end ...");
-        }
-
-        ///////////////////////////////////////////////////
-        ///
-        /// Close Scanner ()
-        ///
-        ///////////////////////////////////////////////////
-        function CloseScanner() {
-            MsgBox("\nClose Scanner begin ...");
-            ExitCode = KODAKSCANSDK.CloseScanner();
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: CloseScanner " + ExitCode.toString(16));
-            }
-            GetImages("0");
-            MsgBox("\nClose Scanner end ...");
-        }
-
-        ///////////////////////////////////////////////////
-        ///
-        /// ISFBAttached ()
-        ///
-        ///////////////////////////////////////////////////
-        function ISFBAttached() {
-            ExitCode = KODAKSCANSDK.IsFBAttached();
-            MsgBox("\nIsFBAttached = " + ExitCode.toString(16));
-        }
-
-        ///////////////////////////////////////////////////
-        ///
-        /// ShowScannerSetup ()
-        ///
-        ///////////////////////////////////////////////////
-        function ShowScannerSetup() {
-            MsgBox("\nShow Scanner Setup begin ...");
-            ExitCode = KODAKSCANSDK.ShowScannerSetup();
-            if (ExitCode != 0) {
-                MsgBox("An error occurred: ShowScannerSetup " + ExitCode.toString(16));
-            }
-            MsgBox("\nShow Scanner Setup end ...");
-        }
-
-        ///////////////////////////////////////////////////////////////////////////////
-        ///
-        ///  Get images and display
-        ///
-        //////////////////////////////////////////////////////////////////////////////
-        function GetImages(args)	{
-            var intWidth, intHeight;
-            var maxWidth = 468;
-            var maxHeight = 485;
-            var ratio = 0;
-            var szFileName;
-
-            if (args == "1") {
-                if (m_szPaperSource = "3") {
-                    intNumber = intNumber+2;
-                } else {
-                    intNumber = intNumber+1;
-                }
-
-                if (m_szFileType == "0") {
-                    szFileName	= m_szFilePathName + "\\" + m_szFileName + '00000' + intNumber.toString() + ".tif";
-                } else {
-                    szFileName	= m_szFilePathName + "\\" + m_szFileName + '00000' + intNumber.toString() + ".jpg";
-                }
-
-                var myImg = document.getElementById("pic");
-                myImg.src = szFileName;
-                createNode(szFileName,intNumber);
-                MsgBox(szFileName);
-
-                intWidth = myImg.naturalWidth;
-                intHeight = myImg.naturalHeight;
-                if (intWidth > maxWidth) {
-                    ratio = maxWidth / intWidth;
-                    myImg.setAttribute("width", intWidth *  ratio);
-                    myImg.setAttribute("height", intHeight *  ratio);
-                }
-                else if (intHeight > maxHeight) {
-                    ratio = maxHeight / intHeight;
-                    myImg.setAttribute("width", intWidth *  ratio);
-                    myImg.setAttribute("height", intHeight *  ratio);
-                }
-                document.getElementById("title").value=szFileName;
-            }
-            if (args == "0") {
-                document.getElementById("pic").src = "";
-                document.getElementById("title").value = "";
-            }
-        }
-
-        //////////////////////////////////////////////////////////////////////////////////////////////
-        ///
-        /// Create Node (url,text)
-        ///
-        //////////////////////////////////////////////////////////////////////////////////////////////
-        function createNode(url,text) {
-            var btn = document.createElement("input");
-            btn.type = "button";
-            btn.value = url;
-            btn.style.border = 0;
-            btn.style.backgroundColor = "white";
-            btn.onclick = function () {
-                //alert(this.value);
-                document.getElementById("pic").src= this.value;
-                document.getElementById("title").value= this.value;
-            }
-            document.getElementById("div1").appendChild(btn);
-            btn = document.createElement('div');
-            document.getElementById("div1").appendChild(btn);
-        }
-
-        //////////////////////////////////////////////////////////////////////////////////////////////
-        ///
-        /// sleepn(n)
-        ///
-        //////////////////////////////////////////////////////////////////////////////////////////////
-        function sleepn(n) {
-            var start = new Date().getTime();
-            while (true) if (new Date().getTime() - start > n) break;
-        }
-
-        //////////////////////////////////////////////////////////////////////////////////////////////
-        ///
-        /// MsgBox(m_szStatusMsg)
-        ///
-        //////////////////////////////////////////////////////////////////////////////////////////////
-        function MsgBox(m_szStatusMsg) {
-            document.getElementById("TextArea1").value=document.getElementById("TextArea1").innerText+m_szStatusMsg+"\n ";
-            document.getElementById("TextArea1").scrollTop = document.getElementById("TextArea1").scrollHeight;
-        }
-
-        //////////////////////////////////////////////////////////////////////////////////////////////
-        ///
-        /// Window onload event
-        ///
-        //////////////////////////////////////////////////////////////////////////////////////////////
-        window.onload = function () {
-            window.clearTimeout(timeout);
-            document.getElementById("pic").src = "";
-            document.getElementById("title").value = "";
-            MsgBox(m_szStatusMsg);
-        }
-
-        //////////////////////////////////////////////////////////////////////////////////////////////
-        ///
-        /// Window onbeforeunload event
-        ///
-        //////////////////////////////////////////////////////////////////////////////////////////////
-        window.onbeforeunload = function () {   // Refresh or shut down before the operation
-            var n = window.event.screenX - window.screenLeft;
-            var b = n > document.documentElement.scrollWidth-20;
-            if (b && window.event.clientY < 0 || window.event.altKey) {
-                //alert("This is a close operation rather than a refresh");
-                CloseScanner();
-                KODAKSCANSDK.Dispose();
-                window.event.returnValue = ""; //Put here the code you want to return
-            }
-            else {
-                //alert("This is a refresh operation , rather than shut down");
-                m_szStatusMsg = "Scan Status ...";
-                document.getElementById("TextArea1").value=	"";
-            }
-        }
-
-    </script>
-
+	function testSetDir(){
+		document.getElementById("resetSaveDirBtn").click();
+	}
+	function testUpload(){
+		document.getElementById("startUploadBtn").click();
+	}
+	function testImageCount(){
+		alert(batchImageCount);
+	}
+</script>
+<script src="js/scanService.js"></script>
 </head>
 <body>
+	<button onclick="testSetDir()">testSetDir</button>
+	<button onclick="testUpload()">testUpload</button>
+	<button onclick="testImageCount()">testImgCount</button>
 
 
-<div class="Section1">
 
-    <table border="1" cellspacing="0" cellpadding="0" >
-        <tr>
-            <td style="width:200" valign="top" >
-                <p class="MsoNormal"> <span style="font-size: larger; font-family:arial"/>Kodak Scanner SDK</p>
+	<div style="text-align: center; margin-left: 5px;margin-top:5px; margin-bottom: 5px; display: block;">
+		<button id = "batchPostProcessBtn" class="imgbtn" style="display: none;">
+			<img src="imgs/barcode.png"
+				style="vertical-align: middle; height: 24px;" /> <span id="uploadSpan"
+				style="vertical-align: middle;">条码分割</span>
+		</button>
+		<button id = "uploadBtn" class="imgbtn" style="display: none;">
+			<img src="imgs/submit.png"
+				style="vertical-align: middle; height: 24px;" /> <span id="uploadSpan"
+				style="vertical-align: middle">提交</span>
+		</button>
+		<button id="captureBtn" class="imgbtn">
+			<img src="imgs/scan_append.png"
+				style="vertical-align: middle; height: 24px;" /> <span
+				style="vertical-align: middle">添加扫描</span>
+		</button>
+		<button id="captureInsertBtn" class="imgbtn">
+			<img src="imgs/scan_insert.png"
+				style="vertical-align: middle; height: 24px" /> <span
+				style="vertical-align: middle">插入扫描</span>
+		</button>
+		<button id="captureReplaceBtn" class="imgbtn">
+			<img src="imgs/scan_replace.png"
+				style="vertical-align: middle; height: 24px" /> <span
+				style="vertical-align: middle">重扫</span>
+		</button>
+		<button id="goFirstPageBtn" class="fixedwidthBtn" style="margin-left: 0px;" title="首页">
+			<img src="imgs/first.png" style="vertical-align: middle;" />
+		</button>
+		<button id="goPrevPageBtn" class="fixedwidthBtn" title="前一页">
+			<img src="imgs/back.png" style="vertical-align: middle" />
+		</button>
+		<button id="goNextPageBtn" class="fixedwidthBtn" title="下一页">
+			<img src="imgs/forward.png" style="vertical-align: middle" />
+		</button>
+		<button id="goLastPageBtn" class="fixedwidthBtn" title="尾页">
+			<img src="imgs/last.png" style="vertical-align: middle;" />
+		</button>
+		<button id="leftRotateBtn" class="fixedwidthBtn" style="margin-left: 0px;" title="左转90度">
+			<img src="imgs/rotateleft.png"
+				style="vertical-align: middle; height: 24px" />
+		</button>
+		<button id="rightRotateBtn" class="fixedwidthBtn" style="margin-right: 0px;" title="右转90度">
+			<img src="imgs/rotateright.png"
+				style="vertical-align: middle; height: 24px" />
+		</button>
+		<button id="deleteCurFileBtn" class="fixedwidthBtn" title="删除当前文件">
+			<img src="imgs/delete.png"
+				style="vertical-align: middle; height: 24px" />
+		</button>
+		<button id="deleteAllFileBtn" class="fixedwidthBtn" style="margin-right: 0px;" title="删除所有文件">
+			<img src="imgs/clear_all.png"
+				style="vertical-align: middle; height: 24px" />
+		</button>
+		<button id="selectCaptureSrcBtn" class="imgbtn">
+			<img src="imgs/select_scanner.png"
+				style="vertical-align: middle; height: 24px" /> <span
+				style="vertical-align: middle">扫描仪</span>
+		</button>
+		<button id="commonParaSettingBtn" class="imgbtn">
+			<img src="imgs/settings.png"
+				style="vertical-align: middle; height: 24px" /> <span
+				style="vertical-align: middle">设置</span>
+		</button>
+	</div>
+	<div id="viewContainer"></div>
 
-                <div id="div1" style="width:188px;height: 280px;border: 1px solid;"></div>
+	<div style="position: absolute;top: 250px;left: 1050px; display: none">
+		<button id="adjustGoFirstImageBtn" class="fixedHeightBtn" title="调整到首张">
+		<span style="vertical-align: middle">跳到首张</span>
+		</button>
+		<br/>
+		<button id="adjustGoPrevImageBtn" class="fixedHeightBtn" title="向前调整一张">
+		<span style="vertical-align: middle">向前一张</span>
+		</button>
+		<br/>
+		<button id="adjustGoNextImageBtn" class="fixedHeightBtn" title="向后调整一张">
+		<span style="vertical-align: middle">向后一张</span>
+		</button>
+		<br/>
+		<button id="adjustGoLastImageBtn" class="fixedHeightBtn" title="调整到最后一张">
+		<span style="vertical-align: middle">跳到末张</span>
+		</button>
+	</div>
+	<div id="openModal" class="modalDialog">
+		<!-- <div>	<a href="#close" title="Close" class="close">X</a></div> -->
+		<div>
+			<img id="goFirstImageBtn" src="imgs/first.png" title="第一张"	style="margin-left: 40px;vertical-align: middle"/>
+			 <img id="goPrevImageBtn" src="imgs/back.png" title="前一张" style="margin-left: 40px;vertical-align: middle"/>
+			 <img id="goNextImageBtn" src="imgs/forward.png" title="后一张" style="margin-left: 40px;vertical-align: middle" />
+			 <img id="goLastImageBtn" src="imgs/last.png" title="最后一张" style="margin-left: 40px;vertical-align: middle" />
+			 <img id="leftRotateBtnDetail" src="imgs/rotateleft.png"	title="左转90度" style="margin-left: 40px;vertical-align: middle" />
+			 <img id="rightRotateBtnDetail" src="imgs/rotateright.png" title="右转90度" style="margin-left: 40px;vertical-align: middle" />
+			 <img id="onDetailViewCloseBtn" src="imgs/close.png" title="关闭" style="float: right"/>
+			<!-- <a href="#" title="Close" class="close">X</a> -->
+		</div>
+		<div>
+			<div id="detailImgDes" class="imgDes">5</div>
+			<canvas id="detailCanvas"></canvas>
+		</div>
+	</div>
+	<div id="attachDialog" class="modal">
+  <div class="modal-content">
+    	<div class="modal-header">
+    		 <span style="color: white;font-size: 28px;font-weight: bold;">请输入附件名称</span>
+    		 <!-- <span class="close-text">X</span>  -->
+		</div>
+    <div class="modal-body">
+    	<span style="font-size: 20px;">附件名称: </span><input type="text" id="attachName" style="font-size: 20px;margin-top: 20px;"/><br/>
+    	<button type="button" id="attachOkBtn" style="font-size: 20px;margin-top: 20px;margin-bottom: 20px;margin-right: 160px">确定</button>
+    	<button type="button" id="attachCancelBtn" style="font-size: 20px;margin-top: 20px;margin-bottom: 20px">取消</button>
+    </div>
+  </div>
+  </div>
+  	<div id="paraDialog" class="modal">
+  <div class="modal-content">
+    	<div class="modal-header">
+    		 <span style="color: white;font-size: 28px;font-weight: bold;">参数设置</span>
+    		 <!-- <span class="close-text">X</span>  -->
+		</div>
+    <div class="modal-body tableContainer">
+    	<div class="tableRow">
+    	<div class="tableCell">
+		颜色模式 <select id="paraColorList"></select>
+		</div>
+		<div class="tableCell">
+		分辨率	<select id="paraResList"></select>
+		</div>
+		</div>
+		<div class="tableRow">
+		<div class="tableCell">
+		进纸方式<select id="paraAutoFeedList"></select>
+		</div>
+		<div class="tableCell">
+		自动旋转<select id="paraCustRotateList"></select>
+		</div>
+		</div>
+		<div class="tableRow">
+		<div class="tableCell">
+		自动裁剪 <input type="checkbox" id="paraAutoDeskrewCheck"/>
+		</div>
+		<div class="tableCell">
+		双面扫描 <input type="checkbox" id="paraDuplexEnableCheck"/>
+		</div>
+		</div>
+		<div class="tableRow">
+		<div class="tableCell">
+		显示驱动界面 <input type="checkbox" id="paraDisplayUICheck"/>
+		</div>
+		</div>
+    	<button type="button" id="paraOkBtn" style="font-size: 20px;margin-top: 20px;margin-bottom: 20px;margin-right: 160px">确定</button>
+    	<button type="button" id="paraCancelBtn" style="font-size: 20px;margin-top: 20px;margin-bottom: 20px">取消</button>
+    </div>
+  </div>
+  </div>
+    	<div id="selectSrcDialog" class="modal">
+  <div class="modal-content">
+    	<div class="modal-header">
+    		 <span style="color: white;font-size: 28px;font-weight: bold;">选择扫描仪</span>
+    		 <!-- <span class="close-text">X</span> -->
+		</div>
+    <div class="modal-body tableContainer">
+    	<div class="tableRow">
+    	<div class="tableCell">
+		扫描仪列表 <select id="scannerList"></select>
+		</div>
+		</div>
+    	<button type="button" id="scannerOkBtn" style="font-size: 20px;margin-top: 20px;margin-bottom: 20px;margin-right: 160px">确定</button>
+    	<button type="button" id="scannerCancelBtn" style="font-size: 20px;margin-top: 20px;margin-bottom: 20px">取消</button>
+    </div>
+  </div>
+  </div>
+  <div id="setSaveDir" style="display: none;">
+  	<!-- <input type="text" id="saveSubDirText" style="display: none;"></input> -->
+  	<button type="button" id="resetSaveDirBtn" style="display: none;"></button>
+  </div>
+  <div id="uploadDiv" style="display: none;">
+  	<button type="button" id="startUploadBtn" style="display: none;"></button>
+  </div>
 
-                <select id="Sourcelist"  name="" onchange="document.getElementById('Sourcelist').value=this.value" style="width:188px;height: 20px;border: 1px solid;">
-                    <option   value="1">Scanner Source</option>
-                    <option   value="2"></option>
-                    <option   value="3"></option>
-                    <option   value="4"></option>
-                    <option   value="5"></option>
-                    <option   value="6"></option>
-                    <option   value="7"></option>
-                    <option   value="8"></option>
-                    <option   value="9"></option>
-                    <option   value="10"></option>
-                </select>
-
-                <textarea id="TextArea1" rows="" cols="25"></textarea>
-
-            </td>
-
-            <td style="width:300" valign="top" >
-                <div style="top:1px;position:relative;margin:1px;height:3px;"> </div>
-
-                <!--Our buttons -->
-                <input type="button" style="position:relative;text-align:center;" onclick="SelectScanner()" value="Select Scanner"/>
-                <input type="button" onclick="OpenScanner()" value="Open Scanner"/>
-                <input type="button" onclick="SetParameters()" value="Set Parameters"/>
-                <input type="button" onclick="StartScan()" value="Start Scan"/>
-                <input type="button" onclick="StopScan()" value="Stop Scan"/>
-                <input type="button" onclick="ISFBAttached()" value="Is Flatbed Attached"/>
-                <input type="button" onclick="ShowScannerSetup()" value="Show Scanner Setup"/>
-                <input type="button" onclick="CloseScanner()" value="Close Scanner"/>
-                <p></p>
-
-                <!--Picture frame -->
-                <div style="text-align:center;width:462px;">
-                    <div style="width:452px;height:502px;overflow:hidden;text-overflow:clip;float:left;">
-                        <div><a id="url" target="_blank"><img id="pic" alt="" width="468" height="485" /></a></div>
-                    </div>
-
-                    <!--Picture frame title -->
-                    <div style="text-align:left"><input id="title" type="text" style="height:15px;background-color:#f2f6fb;border:0px solid #f2f6fb;width:452px;color:#ff8800;font-size:9pt;position:relative;padding-top:1px;text-align:center;"/></div>
-                </div>
-
-            </td>
-        </tr>
-    </table>
-
-    <p class="MsoNormal">&nbsp </p>
-</div>
-
+  <br>
+<div id='transferMsg' name='transferMsg' style="position:absolute; height:400px; overflow:auto"></div>
+<br>
+<div id='successMsg' name='successMsg' style="position:absolute; height:400px; overflow:auto"></div>
+<br>
+<div id='failedMsg' name='failedMsg' style="position:absolute; height:400px; overflow:auto"></div>
 </body>
 </html>
-

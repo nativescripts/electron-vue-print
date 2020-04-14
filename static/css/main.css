@@ -1,0 +1,56 @@
+.imgbtn {
+	background-color:transparent
+}
+.fixedwidthBtn{
+	background-color:transparent;
+	width: 60px;
+	}
+.fixedHeightBtn{
+	background-color:transparent;
+	height: 30px;
+	margin-bottom: 10px;
+}
+div#viewContainer {
+    width: 800px;
+    height: 600px;
+    /*width: 1100px;
+    height: 900px;*/
+    left: 250px;
+    border: 1px solid rgb(204, 204, 204);
+    display: block;
+   	position: absolute;
+    background-color: rgb(255, 255, 255);
+    /*float: left;*/
+}
+div#configContainer {
+}
+.imgDes{
+  position: absolute;
+  height: 20px;
+  left: 0;
+  top: 0;
+  padding: 0;
+  padding-top: 2px;
+  text-align: center;
+  color:red;
+  font-size: 28px;
+  font-weight: bold;
+  /*display:none;*/
+}
+.outerDiv{
+	position: absolute;
+	border-style: solid;
+	border-width: 1px;
+	border-color: rgb(200, 200, 200);
+}
+.tableContainer{
+	display: table;
+	border-spacing:20px
+}
+.tableRow{
+	display: table-row;
+}
+.tableCell{
+	display: table-cell;
+	margin-left: 10px;
+}
