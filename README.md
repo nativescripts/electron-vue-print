@@ -210,7 +210,7 @@ export default {
 
       "icon": "build/icons/icon.ico",
 
-      "extraResources": "./static/*.html"
+      "extraResources": "./static"
 
     },
 
